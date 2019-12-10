@@ -64,7 +64,31 @@ func race() {
 	fmt.Println(oneResult, twoResult)
 }
 
+func race2() {
+	ctx, cancel := context.WithCancel(context.Background())
+	g, ctx := errgroup.WithContext(ctx)
+	results := make(chan int32)
+	defer close(results)
+	g.Go(func() error {
+		results <- one(ctx)
+		return nil
+	})
+	g.Go(func() error {
+		results <- two(ctx)
+		return fmt.Errorf("this will cancel the other task")
+	})
+	var r int32
+	select {
+	case r = <-results:
+		cancel()
+	case <-ctx.Done():
+		panic("!") // can't happen as-is; in real code we'd return err
+	}
+	fmt.Println(r)
+}
+
 func main() {
 	all()
 	race()
+	race2()
 }
