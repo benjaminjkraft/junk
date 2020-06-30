@@ -1,0 +1,31 @@
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"strconv"
+	"strings"
+
+	"github.com/benjaminjkraft/junk/go2/result"
+)
+
+func bytestoi(b []byte) result.Result(int) {
+	return result.NewResult(strconv.Atoi(string(b)))
+}
+
+func resultTypes() {
+	b := strings.NewReader("10")
+	// bytestoi(ioutil.ReadAll(b)), with error handling
+	i, err := result.Lift(bytestoi)(
+		result.Func(ioutil.ReadAll)(
+			b)).Unwrap()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(i)
+}
+
+func main() {
+	resultTypes()
+}

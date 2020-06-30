@@ -1,0 +1,67 @@
+package result
+
+type Result(type T) struct {
+	val T // valid only if err == nil
+	err error
+}
+
+func (r Result(T)) Unwrap() (T, error) {
+	if r.err != nil {
+		var zero T
+		return zero, r.err
+	}
+	return r.val, nil
+}
+
+func (r Result(T)) Must() T {
+	if r.err != nil {
+		panic(r.err)
+	}
+	return r.val
+}
+
+func (r Result(T)) OK() bool {
+	return r.err == nil
+}
+
+func Just(type T)(val T) Result(T) {
+	return Result(T){val: val}
+}
+
+func Err(type T)(err error) Result(T) {
+	return Result(T){err: err}
+}
+
+func NewResult(type T)(val T, err error) Result(T) {
+	return Result(T){val, err}
+}
+
+func Func(type T, U)(f func(T) (U, error)) func(T) Result(U) {
+	return func(t T) (_ Result(U)) {
+		return NewResult(f(t))
+	}
+}
+
+func (r Result(T)) Then(f func(t T)) {
+	if r.err == nil {
+		f(r.val)
+	}
+}
+
+func Bind(type T, U)(f func(T) Result(U), val Result(T)) Result(U) {
+	if val.err != nil {
+		return Err(U)(val.err)
+	} else {
+		return f(val.val)
+	}
+}
+
+func Lift(type T, U)(f func(T) Result(U)) func(_ Result(T)) Result(U) {
+	return func(t Result(T)) (_ Result(U)) { return Bind(f, t) }
+}
+
+func ResultCompose(type T1, T2, T3)(f2 func(T2) Result(T3), f1 func(T1) Result(T2)) func(T1) Result(T3) {
+	return func(t T1) (_ Result(T3)) {
+		return Bind(f2, f1(t))
+	}
+}
