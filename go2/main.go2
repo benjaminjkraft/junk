@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -105,7 +106,17 @@ func httpReqs() {
 	fmt.Println(Map(resps, str))
 }
 
+func unmarshal(type *T)(data []byte) (*T, error) {
+	ret := new(T)
+	return ret, json.Unmarshal(data, ret)
+}
+
+type structA struct {
+	A int `json:"a"`
+}
+
 func main() {
 	resultTypes()
 	httpReqs()
+	fmt.Println(unmarshal(*structA)([]byte(`{"a": 1}`)))
 }
