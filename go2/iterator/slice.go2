@@ -17,3 +17,44 @@ func (s *sliceIterator(T)) Next() (val T, ok bool) {
 func FromSlice(type T)(s []T) Iterator(T) {
 	return &sliceIterator(T){s: s}
 }
+
+func FromElements(type T)(s ...T) Iterator(T) {
+	return FromSlice(s)
+}
+
+func Collect(type T)(iter Iterator(T)) []T {
+	var vals []T
+	for {
+		val, ok := iter.Next()
+		if !ok {
+			return vals
+		}
+		vals = append(vals, val)
+	}
+}
+
+type chanIterator(type T) <-chan T
+
+func (s chanIterator(T)) Next() (val T, ok bool) {
+	val, ok = <-s
+	return val, ok
+}
+
+func FromChan(type T)(s <-chan T) Iterator(T) {
+	return chanIterator(T)(s)
+}
+
+func Send(type T)(iter Iterator(T)) <-chan T {
+	c := make(chan T)
+	go func() {
+		for {
+			val, ok := iter.Next()
+			if !ok {
+				close(c)
+				break
+			}
+			c <- val
+		}
+	}()
+	return c
+}

@@ -1,16 +1,5 @@
 package iterator
 
-func Collect(type T)(iter Iterator(T)) []T {
-	var vals []T
-	for {
-		val, ok := iter.Next()
-		if !ok {
-			return vals
-		}
-		vals = append(vals, val)
-	}
-}
-
 type take(type T) struct {
 	remaining int
 	wrapped   Iterator(T)
@@ -18,6 +7,7 @@ type take(type T) struct {
 
 func (t *take(T)) Next() (val T, ok bool) {
 	if t.remaining <= 0 {
+		t.wrapped = nil
 		return val, false
 	}
 	t.remaining--
@@ -123,4 +113,30 @@ func Chain(type T)(iters ...Iterator(T)) Iterator(T) {
 
 func ChainIters(type T)(iters Iterator(Iterator(T))) Iterator(T) {
 	return &chain(T){iters: iters}
+}
+
+type interleave(type T) struct {
+	next  int
+	iters []Iterator(T)
+}
+
+func (in *interleave(T)) Next() (val T, ok bool) {
+	initialNext := in.next
+	for {
+		val, ok = in.iters[in.next].Next()
+		in.next++
+		if in.next >= len(in.iters) {
+			in.next = 0
+		}
+		if ok {
+			return val, true
+		}
+		if in.next == initialNext {
+			return val, false
+		}
+	}
+}
+
+func Interleave(type T)(iters ...Iterator(T)) Iterator(T) {
+	return &interleave(T){iters: iters}
 }
