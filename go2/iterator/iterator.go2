@@ -1,0 +1,5 @@
+package iterator
+
+type Iterator(type T) interface {
+	Next() (val T, ok bool)
+}

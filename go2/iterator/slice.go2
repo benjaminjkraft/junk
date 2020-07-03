@@ -1,0 +1,19 @@
+package iterator
+
+type sliceIterator(type T) struct {
+	s []T
+	i int
+}
+
+func (s *sliceIterator(T)) Next() (val T, ok bool) {
+	if s.i >= len(s.s) {
+		return val, false
+	}
+	val = s.s[s.i]
+	s.i++
+	return val, true
+}
+
+func FromSlice(type T)(s []T) Iterator(T) {
+	return &sliceIterator(T){s: s}
+}

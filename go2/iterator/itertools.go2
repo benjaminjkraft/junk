@@ -1,0 +1,126 @@
+package iterator
+
+func Collect(type T)(iter Iterator(T)) []T {
+	var vals []T
+	for {
+		val, ok := iter.Next()
+		if !ok {
+			return vals
+		}
+		vals = append(vals, val)
+	}
+}
+
+type take(type T) struct {
+	remaining int
+	wrapped   Iterator(T)
+}
+
+func (t *take(T)) Next() (val T, ok bool) {
+	if t.remaining <= 0 {
+		return val, false
+	}
+	t.remaining--
+	return t.wrapped.Next()
+}
+
+func Take(type T)(n int, iter Iterator(T)) Iterator(T) {
+	return &take(T){n, iter}
+}
+
+type takeWhile(type T) struct {
+	f       func(T) bool
+	wrapped Iterator(T)
+}
+
+func (t *takeWhile(T)) Next() (val T, ok bool) {
+	if t.f == nil {
+		return val, false
+	}
+
+	val, ok = t.wrapped.Next()
+	if !ok || !t.f(val) {
+		t.f = nil
+		t.wrapped = nil
+		return val, false
+	}
+
+	return val, true
+}
+
+func TakeWhile(type T)(f func(T) bool, iter Iterator(T)) Iterator(T) {
+	return &takeWhile(T){f, iter}
+}
+
+type drop(type T) struct {
+	n       int
+	wrapped Iterator(T)
+}
+
+func (t *drop(T)) Next() (val T, ok bool) {
+	if t.n > 0 {
+		for i := 0; i < t.n; i++ {
+			t.wrapped.Next()
+		}
+		t.n = 0
+	}
+	return t.wrapped.Next()
+}
+
+func Drop(type T)(n int, iter Iterator(T)) Iterator(T) {
+	return &drop(T){n, iter}
+}
+
+type dropWhile(type T) struct {
+	f       func(T) bool
+	wrapped Iterator(T)
+}
+
+func (t *dropWhile(T)) Next() (val T, ok bool) {
+	val, ok = t.wrapped.Next()
+	if !ok {
+		return val, false
+	}
+	for t.f != nil && t.f(val) {
+		val, ok = t.wrapped.Next()
+		if !ok {
+			return val, false
+		}
+	}
+	t.f = nil
+	return val, true
+}
+
+func DropWhile(type T)(f func(T) bool, iter Iterator(T)) Iterator(T) {
+	return &dropWhile(T){f, iter}
+}
+
+type chain(type T) struct {
+	iters   Iterator(Iterator(T))
+	current Iterator(T)
+}
+
+func (c *chain(T)) Next() (val T, ok bool) {
+	if c.current != nil {
+		if val, ok = c.current.Next(); ok {
+			return val, true
+		}
+	}
+	for {
+		c.current, ok = c.iters.Next()
+		if !ok {
+			return val, false
+		}
+		if val, ok = c.current.Next(); ok {
+			return val, true
+		}
+	}
+}
+
+func Chain(type T)(iters ...Iterator(T)) Iterator(T) {
+	return ChainIters(FromSlice(iters))
+}
+
+func ChainIters(type T)(iters Iterator(Iterator(T))) Iterator(T) {
+	return &chain(T){iters: iters}
+}

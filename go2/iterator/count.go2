@@ -1,0 +1,40 @@
+package iterator
+
+type intlike interface {
+	type int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64
+}
+
+type count(type T intlike) struct {
+	next   T
+	step   T
+	hasEnd bool
+	end    T
+}
+
+func (c *count(T)) Next() (val T, ok bool) {
+	if c.hasEnd && (c.step >= 0 && c.next >= c.end ||
+		c.step < 0 && c.next <= c.end) {
+		return val, false
+	}
+	val = c.next
+	c.next += c.step
+	return val, true
+}
+
+func Count(type T intlike)(start, step T) Iterator(T) {
+	return &count(T){next: start, step: step}
+}
+
+func CountUntil(type T intlike)(start, step, end T) Iterator(T) {
+	return &count(T){next: start, step: step, hasEnd: true, end: end}
+}
+
+type repeat(type T) struct{ val T }
+
+func (r repeat(T)) Next() (val T, ok bool) {
+	return r.val, true
+}
+
+func Repeat(type T)(val T) Iterator(T) {
+	return repeat(T){val}
+}
