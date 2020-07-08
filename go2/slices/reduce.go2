@@ -17,3 +17,7 @@ func All(type T)(s []T, f func(T) bool) bool {
 	}
 	return true
 }
+
+func Contains(type T comparable)(haystack []T, needle T) bool {
+	return Any(haystack, func(val T) bool { return val == needle })
+}
