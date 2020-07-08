@@ -1,0 +1,24 @@
+package slices
+
+import (
+	"context"
+
+	"golang.org/x/sync/errgroup"
+)
+
+func ParallelMap(type T, U)(ctx context.Context, f func(context.Context, T) (U, error), ts []T) ([]U, error) {
+	eg, ctx := errgroup.WithContext(ctx)
+	results := make([]U, len(ts)) // only assign index for thread-safety
+	for i, t := range ts {
+		i, t := i, t // bind loop variants for goroutine
+		eg.Go(func() error {
+			u, err := f(ctx, t)
+			if err != nil {
+				return err
+			}
+			results[i] = u
+			return err
+		})
+	}
+	return results, eg.Wait()
+}

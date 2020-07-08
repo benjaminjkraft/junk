@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/benjaminjkraft/junk/go2/result"
-	"golang.org/x/sync/errgroup"
+	"github.com/benjaminjkraft/junk/go2/slices"
 )
 
 func bytestoi(b []byte) result.Result(int) {
@@ -30,24 +30,6 @@ func resultTypes() {
 	fmt.Println(i)
 }
 
-func ParallelMap(type T, U)(ctx context.Context, f func(context.Context, T) (U, error), ts []T) ([]U, error) {
-	eg, ctx := errgroup.WithContext(ctx)
-	results := make([]U, len(ts)) // only assign index for thread-safety
-	for i, t := range ts {
-		i, t := i, t // bind loop variants for goroutine
-		eg.Go(func() error {
-			u, err := f(ctx, t)
-			if err != nil {
-				return err
-			}
-			results[i] = u
-			return err
-		})
-	}
-	return results, eg.Wait()
-
-}
-
 func getresponse(ctx context.Context, req *http.Request) ([]byte, error) {
 	fmt.Printf("making request to %v\n", req.URL)
 	defer fmt.Printf("completed request to %v\n", req.URL)
@@ -65,30 +47,10 @@ func getresponse(ctx context.Context, req *http.Request) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
-func Map(type T1, T2)(s []T1, f func(T1) T2) []T2 {
-	r := make([]T2, len(s))
-	for i, v := range s {
-		r[i] = f(v)
-	}
-	return r
-}
-
-func MapErr(type T1, T2)(s []T1, f func(T1) (T2, error)) ([]T2, error) {
-	r := make([]T2, len(s))
-	for i, v := range s {
-		var err error
-		r[i], err = f(v)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return r, nil
-}
-
 func str(b []byte) string { return string(b) }
 
 func httpReqs() {
-	reqs, err := MapErr([]string{"www.khanacademy.org", "google.com", "en.wikipedia.org"},
+	reqs, err := slices.MapErr([]string{"www.khanacademy.org", "google.com", "en.wikipedia.org"},
 		func(domain string) (*http.Request, error) {
 			return http.NewRequest("GET", "https://"+domain+"/robots.txt", nil)
 		})
@@ -97,13 +59,13 @@ func httpReqs() {
 		return
 	}
 
-	resps, err := ParallelMap(context.Background(), getresponse, reqs)
+	resps, err := slices.ParallelMap(context.Background(), getresponse, reqs)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	fmt.Println(Map(resps, str))
+	fmt.Println(slices.Map(resps, str))
 }
 
 func unmarshal(type *T)(data []byte) (*T, error) {
@@ -119,4 +81,7 @@ func main() {
 	resultTypes()
 	httpReqs()
 	fmt.Println(unmarshal(*structA)([]byte(`{"a": 1}`)))
+	startsWithFoo := func(s string) bool { return strings.HasPrefix(s, "foo") }
+	fmt.Println(slices.Any([]string{"foo", "foobar", "bar"}, startsWithFoo))
+	fmt.Println(slices.All([]string{"foo", "foobar", "bar"}, startsWithFoo))
 }
