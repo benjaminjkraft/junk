@@ -1,0 +1,30 @@
+package stack
+
+type Stack(type T) struct {
+	// the stack is buf[:length]; the rest of buf is buffer to reuse
+	buf    []T
+	length int
+}
+
+func (s *Stack(T)) Push(v T) {
+	if s.length >= len(s.buf) {
+		s.buf = append(s.buf, v)
+	} else {
+		s.buf[s.length] = v
+	}
+	s.length++
+}
+
+func (s *Stack(T)) Pop() T {
+	if s.length == 0 {
+		panic("pop from empty stack")
+	}
+
+	s.length--
+	return s.buf[s.length]
+}
+
+// read the full stack; the returned value MUST NOT be modified in place.
+func (s *Stack(T)) Read() []T {
+	return s.buf[:s.length]
+}

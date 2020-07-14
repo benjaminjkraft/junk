@@ -1,0 +1,55 @@
+package stack
+
+import "testing"
+
+func slicesEqual(type T comparable)(a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func assertSlicesEqual(type T comparable)(t *testing.T, got, want []T) {
+	if !slicesEqual(got, want) {
+		t.Errorf("slices not equal:\n\tgot  %#v\n\twant %#v", got, want)
+	}
+}
+
+func assertEqual(type T comparable)(t *testing.T, got, want T) {
+	if got != want {
+		t.Errorf("not equal:\n\tgot  %#v\n\twant %#v", got, want)
+	}
+}
+
+func TestStringStack(t *testing.T) {
+	var s Stack(string)
+	assertSlicesEqual(t, s.Read(), nil)
+	s.Push("a")
+	assertSlicesEqual(t, s.Read(), []string{"a"})
+	assertEqual(t, s.Pop(), "a")
+	assertSlicesEqual(t, s.Read(), []string{})
+	s.Push("b")
+	assertSlicesEqual(t, s.Read(), []string{"b"})
+	s.Push("c")
+	assertSlicesEqual(t, s.Read(), []string{"b", "c"})
+	assertEqual(t, s.Pop(), "c")
+	assertSlicesEqual(t, s.Read(), []string{"b"})
+	s.Push("d")
+	assertSlicesEqual(t, s.Read(), []string{"b", "d"})
+	assertEqual(t, s.Pop(), "d")
+	assertSlicesEqual(t, s.Read(), []string{"b"})
+	assertEqual(t, s.Pop(), "b")
+	assertSlicesEqual(t, s.Read(), []string{})
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("didn't panic!")
+		}
+	}()
+	s.Pop()
+}
