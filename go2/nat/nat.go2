@@ -1,0 +1,28 @@
+package nat
+
+type Nat interface {
+	Int() int
+}
+
+type Zero struct{}
+type Succ[type N Nat] struct{}
+
+func (_ Zero) Int() int    { return 0 }
+func (_ Succ[N]) Int() int { var n N; return n.Int() + 1 }
+
+type Sum[type A, B Nat] interface {
+	Nat
+	isSumOf(A, B)
+}
+
+func (_ Zero) isSumOf(Zero, Zero)       {}
+func (_ Succ[A]) isSumOf(Succ[A], Zero) {}
+
+// func (_ Succ[Sum[A, B]]) isSumOf(A, Succ[B]) {}
+
+// cannot use Succ[Sum[Succ[Zero], Zero]]((Succ[Succ[Zero]] literal))
+// (value of type Succ(Sum(Succ(Zero), Zero))) as Sum(Succ(Zero), Succ(Zero))
+// value in variable declaration: wrong type for method isSumOf
+// (have func(main.Succ(A), main.Zero), want func(main.Succ(main.Zero), main.Succ(main.Zero)))
+
+var _ Sum[Succ[Zero], Succ[Zero]] = Succ[Sum[Succ[Zero], Zero]](Succ[Succ[Zero]]{})
