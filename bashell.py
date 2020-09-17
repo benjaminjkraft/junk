@@ -3,11 +3,12 @@
 # Compiles a bash command to read a file down to use only the following
 # characters:
 #   []$<\_
-# from https://play.allesctf.net/tasks/Bashell.
+# for the CTF puzzle at [1].
 #
-# Many techniques borrowed from [1].
+# Many techniques borrowed from [2].
 #
-# [1] https://hack.more.systems/writeup/2017/12/30/34c3ctf-minbashmaxfun/
+# [1] https://ctftime.org/task/12955
+# [2] https://hack.more.systems/writeup/2017/12/30/34c3ctf-minbashmaxfun/
 #
 # Authors: Tej Kanwar, Ben Kraft (team rmrfslash)
 
