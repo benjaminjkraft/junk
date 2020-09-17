@@ -3,7 +3,7 @@
 # Compiles a bash command to read a file down to use only the following
 # characters:
 #   []$<\_
-# for the CTF puzzle at [1].
+# for the CTF puzzle at [1].  See bashell.bash for the output.
 #
 # Many techniques borrowed from [2].
 #
