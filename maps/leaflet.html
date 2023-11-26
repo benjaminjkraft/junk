@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet"
+              href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+              crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+                crossorigin=""></script>
+    </head>
+    <body style="height: 100vh; margin: 0;">
+        <div id="map" style="height: 100%;"></div>
+        <script>
+            const map = L.map('map').setView([47.77, -122.44], 16);
+            L.tileLayer.wms('https://carto.nationalmap.gov/arcgis/services/contours/MapServer/WMSServer', {
+                layers: '10,11,12,18,20,23,25,34',
+                format: 'image/svg+xml',
+                maxZoom: 19,
+                attribution: 'U.S. Geological Survey'
+            }).addTo(map);
+        </script>
+    </body>
+</html>
