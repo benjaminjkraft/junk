@@ -1,1 +1,2 @@
 <svg onload=alert(1) />
+<img onmouseover=alert(1) />
